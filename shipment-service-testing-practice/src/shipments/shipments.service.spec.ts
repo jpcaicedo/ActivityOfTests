@@ -124,4 +124,34 @@ describe('ShipmentsService', () => {
       NotFoundException,
     );
   });
+
+    it('creates and saves a shipment', async () => {
+    // Arrange
+    const data = {
+      trackingCode: 'SHIP-100',
+      destination: 'Cali',
+    };
+    const builtShipment = {
+      ...data,
+      status: ShipmentStatus.CREATED,
+    } as ShipmentEntity;
+    const savedShipment: ShipmentEntity = {
+      id: 1,
+      ...data,
+      status: ShipmentStatus.CREATED,
+    };
+    repositoryMock.create.mockReturnValue(builtShipment);
+    repositoryMock.save.mockResolvedValue(savedShipment);
+
+    // Act
+    const result = await service.create(data);
+
+    // Assert
+    expect(repositoryMock.create).toHaveBeenCalledWith({
+      ...data,
+      status: ShipmentStatus.CREATED,
+    });
+    expect(repositoryMock.save).toHaveBeenCalledWith(builtShipment);
+    expect(result).toEqual(savedShipment);
+  });
 });
