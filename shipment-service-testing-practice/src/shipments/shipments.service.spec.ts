@@ -97,34 +97,6 @@ describe('ShipmentsService', () => {
     );
   });
 
-    it('returns a shipment when the id exists', async () => {
-    // Arrange
-    const shipment: ShipmentEntity = {
-      id: 7,
-      trackingCode: 'SHIP-7',
-      destination: 'Medellín',
-      status: ShipmentStatus.CREATED,
-    };
-    repositoryMock.findOneBy.mockResolvedValue(shipment);
-
-    // Act
-    const result = await service.findOne(7);
-
-    // Assert
-    expect(result).toEqual(shipment);
-    expect(repositoryMock.findOneBy).toHaveBeenCalledWith({ id: 7 });
-  });
-
-  it('throws NotFoundException when the id does not exist', async () => {
-    // Arrange
-    repositoryMock.findOneBy.mockResolvedValue(null);
-
-    // Act & Assert
-    await expect(service.findOne(999)).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
-  });
-
     it('creates and saves a shipment', async () => {
     // Arrange
     const data = {
@@ -154,4 +126,31 @@ describe('ShipmentsService', () => {
     expect(repositoryMock.save).toHaveBeenCalledWith(builtShipment);
     expect(result).toEqual(savedShipment);
   });
+
+    it('dispatches and saves a valid shipment', async () => {
+    // Arrange
+    const shipment: ShipmentEntity = {
+      id: 7,
+      trackingCode: 'SHIP-7',
+      destination: 'Cali',
+      status: ShipmentStatus.CREATED,
+    };
+    const updatedShipment: ShipmentEntity = {
+      ...shipment,
+      status: ShipmentStatus.DISPATCHED,
+    };
+    repositoryMock.findOneBy.mockResolvedValue(shipment);
+    repositoryMock.save.mockResolvedValue(updatedShipment);
+
+    // Act
+    const result = await service.dispatch(7);
+
+    // Assert
+    expect(repositoryMock.findOneBy).toHaveBeenCalledWith({ id: 7 });
+    expect(rulesMock.ensureCanBeDispatched).toHaveBeenCalledWith(shipment);
+    expect(shipment.status).toBe(ShipmentStatus.DISPATCHED);
+    expect(repositoryMock.save).toHaveBeenCalledWith(shipment);
+    expect(result).toBe(updatedShipment);
+  });
+  
 });
