@@ -43,4 +43,29 @@ describe('ShipmentsService', () => {
   it('is defined', () => {
     expect(service).toBeDefined();
   });
+   it('returns all shipments', async () => {
+    // Arrange
+    const shipments: ShipmentEntity[] = [
+      {
+        id: 1,
+        trackingCode: 'SHIP-1',
+        destination: 'Cali',
+        status: ShipmentStatus.CREATED,
+      },
+      {
+        id: 2,
+        trackingCode: 'SHIP-2',
+        destination: 'Bogotá',
+        status: ShipmentStatus.CREATED,
+      },
+    ];
+    repositoryMock.find.mockResolvedValue(shipments);
+
+    // Act
+    const result = await service.findAll();
+
+    // Assert
+    expect(result).toEqual(shipments);
+    expect(repositoryMock.find).toHaveBeenCalledTimes(1);
+  });
 });
