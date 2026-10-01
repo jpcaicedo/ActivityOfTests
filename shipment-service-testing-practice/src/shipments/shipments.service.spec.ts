@@ -96,4 +96,32 @@ describe('ShipmentsService', () => {
       NotFoundException,
     );
   });
+
+    it('returns a shipment when the id exists', async () => {
+    // Arrange
+    const shipment: ShipmentEntity = {
+      id: 7,
+      trackingCode: 'SHIP-7',
+      destination: 'Medellín',
+      status: ShipmentStatus.CREATED,
+    };
+    repositoryMock.findOneBy.mockResolvedValue(shipment);
+
+    // Act
+    const result = await service.findOne(7);
+
+    // Assert
+    expect(result).toEqual(shipment);
+    expect(repositoryMock.findOneBy).toHaveBeenCalledWith({ id: 7 });
+  });
+
+  it('throws NotFoundException when the id does not exist', async () => {
+    // Arrange
+    repositoryMock.findOneBy.mockResolvedValue(null);
+
+    // Act & Assert
+    await expect(service.findOne(999)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
 });
